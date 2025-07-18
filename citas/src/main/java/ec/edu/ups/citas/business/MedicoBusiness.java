@@ -28,8 +28,8 @@ public class MedicoBusiness {
         return toDTO(m);
     }
 
-    public void eliminar(Long id) {
-        medicoDAO.eliminar(id);
+    public boolean eliminar(Long id) {
+        return medicoDAO.eliminar(id);
     }
 
     public MedicoDTO buscarPorId(Long id) {

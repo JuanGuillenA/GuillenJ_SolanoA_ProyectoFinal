@@ -29,8 +29,8 @@ public class HorarioBusiness {
         return toDTO(h);
     }
 
-    public void eliminar(Long id) {
-        horarioDAO.eliminar(id);
+    public boolean eliminar(Long id) {
+        return horarioDAO.eliminar(id);
     }
 
     public HorarioDTO buscarPorId(Long id) {
@@ -69,5 +69,10 @@ public class HorarioBusiness {
         h.setHoraFin(dto.getHoraFin());
         h.setMedico(medicoDAO.buscarPorId(dto.getMedicoId()));
         return h;
+    }
+    public List<HorarioDTO> listarTodos() {
+        return horarioDAO.listarTodos().stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
     }
 }

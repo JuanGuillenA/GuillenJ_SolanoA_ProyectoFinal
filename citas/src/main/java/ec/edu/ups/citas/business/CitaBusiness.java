@@ -1,20 +1,11 @@
 package ec.edu.ups.citas.business;
 
 import ec.edu.ups.citas.dao.CitaDAO;
-import ec.edu.ups.citas.dao.EspecialidadDAO;
 import ec.edu.ups.citas.dao.HorarioDAO;
 import ec.edu.ups.citas.dao.MedicoDAO;
 import ec.edu.ups.citas.dao.UsuarioDAO;
 import ec.edu.ups.citas.dto.CitaDTO;
-import ec.edu.ups.citas.dto.EspecialidadDTO;
-import ec.edu.ups.citas.dto.HorarioDTO;
-import ec.edu.ups.citas.dto.MedicoDTO;
-import ec.edu.ups.citas.dto.UsuarioDTO;
 import ec.edu.ups.citas.modelo.Cita;
-import ec.edu.ups.citas.modelo.Especialidad;
-import ec.edu.ups.citas.modelo.Horario;
-import ec.edu.ups.citas.modelo.Medico;
-import ec.edu.ups.citas.modelo.Usuario;
 import ec.edu.ups.citas.modelo.Estado;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -46,8 +37,8 @@ public class CitaBusiness {
         return toDTO(c);
     }
 
-    public void eliminar(Long id) {
-        citaDAO.eliminar(id);
+    public boolean eliminar(Long id) {
+        return citaDAO.eliminar(id);
     }
 
     public CitaDTO buscarPorId(Long id) {
@@ -60,34 +51,61 @@ public class CitaBusiness {
                     .collect(Collectors.toList());
     }
 
-    public List<CitaDTO> listarPorPaciente(Long pacId) {
-        return citaDAO.listarPorPaciente(pacId).stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
+ // Historial y filtros
+    public List<CitaDTO> listarPorPacienteYFechas(Long pacId, LocalDate desde, LocalDate hasta) {
+        return citaDAO.listarPorPacienteYFechas(pacId, desde, hasta).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
     }
 
-    public List<CitaDTO> listarPorMedico(Long medId) {
-        return citaDAO.listarPorMedico(medId).stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
-    }
-
-    public List<CitaDTO> listarPorEstado(Estado estado) {
-        return citaDAO.listarPorEstado(estado).stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
+    public List<CitaDTO> listarPorMedicoYFechas(Long medId, LocalDate desde, LocalDate hasta) {
+        return citaDAO.listarPorMedicoYFechas(medId, desde, hasta).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
     }
 
     public List<CitaDTO> listarPorPacienteYEstado(Long pacId, Estado estado) {
         return citaDAO.listarPorPacienteYEstado(pacId, estado).stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
     }
+
+    public List<CitaDTO> listarPorMedicoYEstado(Long medId, Estado estado) {
+        return citaDAO.listarPorMedicoYEstado(medId, estado).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
+
+    public List<CitaDTO> listarPorEstado(Estado estado) {
+        return citaDAO.listarPorEstado(estado).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
+    
 
     public List<CitaDTO> listarPorMedicoYFecha(Long medId, LocalDate fecha) {
         return citaDAO.listarPorMedicoYFecha(medId, fecha).stream()
-                    .map(this::toDTO)
-                    .collect(Collectors.toList());
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
+
+    public List<CitaDTO> listarPorEspecialidad(String especialidad) {
+        return citaDAO.listarPorEspecialidad(especialidad).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
+    
+    public List<CitaDTO> listarPorPaciente(Long pacId) {
+        return citaDAO.listarPorPaciente(pacId).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
+
+    
+    public List<CitaDTO> listarPorMedico(Long medId) {
+        return citaDAO.listarPorMedico(medId).stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
     }
 
     private CitaDTO toDTO(Cita c) {

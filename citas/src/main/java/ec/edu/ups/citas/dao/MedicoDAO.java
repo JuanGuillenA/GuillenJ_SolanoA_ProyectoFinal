@@ -21,11 +21,13 @@ public class MedicoDAO {
         return em.merge(m);
     }
 
-    public void eliminar(Long id) {
+    public boolean eliminar(Long id) {
         Medico m = em.find(Medico.class, id);
         if (m != null) {
             em.remove(m);
+            return true;
         }
+        return false;
     }
 
     public Medico buscarPorId(Long id) {

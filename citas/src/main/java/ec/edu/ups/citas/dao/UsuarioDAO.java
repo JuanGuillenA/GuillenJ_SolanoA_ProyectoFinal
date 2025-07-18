@@ -22,11 +22,13 @@ public class UsuarioDAO {
         return em.merge(usuario);
     }
 
-    public void eliminar(Long id) {
+    public boolean eliminar(Long id) {
         Usuario u = em.find(Usuario.class, id);
         if (u != null) {
             em.remove(u);
+            return true;
         }
+		return false;
     }
 
     public Usuario buscarPorId(Long id) {

@@ -27,8 +27,9 @@ public class UsuarioBusiness {
         return toDTO(u);
     }
 
-    public void eliminar(Long id) {
-        usuarioDAO.eliminar(id);
+    public boolean eliminar(Long id) {
+    	return usuarioDAO.eliminar(id);
+        
     }
 
     public UsuarioDTO buscarPorId(Long id) {

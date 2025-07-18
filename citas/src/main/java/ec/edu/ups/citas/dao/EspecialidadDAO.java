@@ -20,11 +20,13 @@ public class EspecialidadDAO {
         return em.merge(e);
     }
 
-    public void eliminar(Long id) {
+    public boolean eliminar(Long id) {
         Especialidad e = em.find(Especialidad.class, id);
         if (e != null) {
             em.remove(e);
+            return true;
         }
+        return false;
     }
 
     public Especialidad buscarPorId(Long id) {

@@ -22,11 +22,13 @@ public class HorarioDAO {
         return em.merge(h);
     }
 
-    public void eliminar(Long id) {
+    public boolean eliminar(Long id) {
         Horario h = em.find(Horario.class, id);
         if (h != null) {
             em.remove(h);
+            return true;
         }
+        return false;
     }
 
     public Horario buscarPorId(Long id) {
@@ -47,5 +49,9 @@ public class HorarioDAO {
         q.setParameter("medId", medicoId);
         q.setParameter("fecha", fecha);
         return q.getResultList();
+    }
+    public List<Horario> listarTodos() {
+        return em.createQuery("SELECT h FROM Horario h", Horario.class)
+                 .getResultList();
     }
 }

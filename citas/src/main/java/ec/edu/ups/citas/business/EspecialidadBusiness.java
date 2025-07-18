@@ -26,8 +26,8 @@ public class EspecialidadBusiness {
         return toDTO(e);
     }
 
-    public void eliminar(Long id) {
-        especialidadDAO.eliminar(id);
+    public boolean eliminar(Long id) {
+        return especialidadDAO.eliminar(id);
     }
 
     public EspecialidadDTO buscarPorId(Long id) {

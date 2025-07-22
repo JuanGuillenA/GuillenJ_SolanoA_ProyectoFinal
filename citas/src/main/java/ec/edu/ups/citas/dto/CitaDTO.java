@@ -14,7 +14,7 @@ public class CitaDTO implements Serializable {
     private LocalTime hora;
     private Long horarioId;
     private Long medicoId;
-    private Long pacienteId;
+    private String pacienteId;
 
     public CitaDTO() {}
 
@@ -30,6 +30,6 @@ public class CitaDTO implements Serializable {
     public void setHorarioId(Long horarioId) { this.horarioId = horarioId; }
     public Long getMedicoId() { return medicoId; }
     public void setMedicoId(Long medicoId) { this.medicoId = medicoId; }
-    public Long getPacienteId() { return pacienteId; }
-    public void setPacienteId(Long pacienteId) { this.pacienteId = pacienteId; }
+    public String getPacienteId() { return pacienteId; }
+    public void setPacienteId(String pacienteId) { this.pacienteId = pacienteId; }
 }

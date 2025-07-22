@@ -103,13 +103,12 @@ public class CitaDAO {
     }
 
     public List<Cita> listarPorMedicoYEstado(Long medicoId, Estado estado) {
-        return em.createQuery(
-            "SELECT c FROM Cita c "
-          + "WHERE c.medico.id = :medId "
-          + "  AND c.estado = :est", Cita.class)
-            .setParameter("medId", medicoId)
-            .setParameter("est", estado)
-            .getResultList();
+        TypedQuery<Cita> q = em.createQuery(
+            "SELECT c FROM Cita c WHERE c.medico.id = :medId AND c.estado = :est",
+            Cita.class);
+        q.setParameter("medId", medicoId);
+        q.setParameter("est", estado);
+        return q.getResultList();
     }
 
     public List<Cita> listarPorEspecialidad(String especialidad) {
@@ -118,5 +117,14 @@ public class CitaDAO {
           + "WHERE LOWER(c.medico.especialidad.nombre) = LOWER(:esp)", Cita.class)
             .setParameter("esp", especialidad)
             .getResultList();
+    }
+    
+    public List<Cita> listarPorFechas(LocalDate desde, LocalDate hasta) {
+        return em.createQuery(
+            "SELECT c FROM Cita c "
+          + "WHERE c.fecha BETWEEN :desde AND :hasta", Cita.class)
+          .setParameter("desde", desde)
+          .setParameter("hasta", hasta)
+          .getResultList();
     }
 }

@@ -3,6 +3,8 @@ package ec.edu.ups.citas.service;
 import ec.edu.ups.citas.business.CitaBusiness;
 import ec.edu.ups.citas.dto.CitaDTO;
 import ec.edu.ups.citas.modelo.Estado;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
@@ -11,10 +13,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Path("/citas")
+@RolesAllowed("paciente")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class CitaResource {
-
     @Inject
     private CitaBusiness citaBus;
 
@@ -28,6 +30,7 @@ public class CitaResource {
     }
 
     @GET
+    @PermitAll
     @Path("/historial")
     public Response historial(
         @QueryParam("pacienteId")   Long pacienteId,
@@ -51,7 +54,7 @@ public class CitaResource {
             lista = citaBus.listarPorPacienteYEstado(pacienteId, estado);
 
         } else if (medicoId != null && estado != null) {
-            lista = citaBus.listarPorMedicoYEstado(medicoId, estado);
+        	lista = citaBus.listarPorMedicoYEstado(medicoId, estado);
 
         } else if (medicoId != null && isoDesde == null && isoHasta == null) {
             lista = citaBus.listarPorMedico(medicoId);

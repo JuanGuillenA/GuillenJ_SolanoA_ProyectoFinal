@@ -13,73 +13,70 @@ import java.util.stream.Collectors;
 @Stateless
 public class UsuarioBusiness {
 
-    @Inject private UsuarioDAO usuarioDAO;
+    @Inject
+    private UsuarioDAO dao;
 
     public UsuarioDTO crear(UsuarioDTO dto) {
         Usuario u = toEntity(dto);
-        usuarioDAO.crear(u);
+        dao.crear(u);
         return toDTO(u);
     }
 
     public UsuarioDTO actualizar(UsuarioDTO dto) {
         Usuario u = toEntity(dto);
-        u = usuarioDAO.actualizar(u);
+        u = dao.actualizar(u);
         return toDTO(u);
     }
 
     public boolean eliminar(Long id) {
-    	return usuarioDAO.eliminar(id);
-        
+        return dao.eliminar(id);
     }
 
     public UsuarioDTO buscarPorId(Long id) {
-        Usuario u = usuarioDAO.buscarPorId(id);
-        return u == null ? null : toDTO(u);
+        return toDTO(dao.buscarPorId(id));
+    }
+
+    public UsuarioDTO buscarPorFirebaseUid(String uid) {
+        return toDTO(dao.buscarPorFirebaseUid(uid));
     }
 
     public List<UsuarioDTO> listarTodos() {
-        return usuarioDAO.listarTodos().stream()
-                 .map(this::toDTO)
-                 .collect(Collectors.toList());
-    }
-
-    public UsuarioDTO buscarPorEmail(String email) {
-        Usuario u = usuarioDAO.buscarPorEmail(email);
-        return u == null ? null : toDTO(u);
+        return dao.listarTodos()
+                  .stream()
+                  .map(this::toDTO)
+                  .collect(Collectors.toList());
     }
 
     public List<UsuarioDTO> listarPorRol(Rol rol) {
-        return usuarioDAO.listarPorRol(rol).stream()
-                 .map(this::toDTO)
-                 .collect(Collectors.toList());
-    }
-
-    public List<UsuarioDTO> buscarPorNombreOEmail(String texto) {
-        return usuarioDAO.buscarPorNombreOEmail(texto).stream()
-                 .map(this::toDTO)
-                 .collect(Collectors.toList());
-    }
-
-    private UsuarioDTO toDTO(Usuario u) {
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(u.getId());
-        dto.setNombre(u.getNombre());
-        dto.setApellido(u.getApellido());
-        dto.setEmail(u.getEmail());
-        dto.setPassword(u.getPassword());
-        dto.setRol(u.getRol().name());
-        return dto;
+        return dao.listarPorRol(rol)
+                  .stream()
+                  .map(this::toDTO)
+                  .collect(Collectors.toList());
     }
 
     private Usuario toEntity(UsuarioDTO dto) {
-        Usuario u = dto.getId() != null
-                ? usuarioDAO.buscarPorId(dto.getId())
-                : new Usuario();
-        u.setNombre(dto.getNombre());
-        u.setApellido(dto.getApellido());
+        // Si dto.getId()==null → nueva
+        Usuario u = (dto.getId() != null)
+            ? dao.buscarPorId(dto.getId())
+            : new Usuario();
+        u.setFirebaseUid(dto.getFirebaseUid());
+        u.setDisplayName(dto.getDisplayName());
         u.setEmail(dto.getEmail());
-        u.setPassword(dto.getPassword());
-        u.setRol(Rol.valueOf(dto.getRol()));
+        u.setTelefono(dto.getTelefono());
+        String raw = dto.getRole().trim().toUpperCase();
+        u.setRole(Rol.valueOf(raw)); 
         return u;
+    }
+
+    private UsuarioDTO toDTO(Usuario u) {
+        if (u == null) return null;
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(u.getId());
+        dto.setFirebaseUid(u.getFirebaseUid());
+        dto.setDisplayName(u.getDisplayName());
+        dto.setEmail(u.getEmail());
+        dto.setTelefono(u.getTelefono());
+        dto.setRole(u.getRole().name());
+        return dto;
     }
 }

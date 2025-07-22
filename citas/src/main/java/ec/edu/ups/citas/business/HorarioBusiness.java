@@ -3,12 +3,21 @@ package ec.edu.ups.citas.business;
 import ec.edu.ups.citas.dao.HorarioDAO;
 import ec.edu.ups.citas.dao.MedicoDAO;
 import ec.edu.ups.citas.dto.HorarioDTO;
+import ec.edu.ups.citas.dto.RecurrenciaHorarioDTO;
 import ec.edu.ups.citas.modelo.Horario;
+import ec.edu.ups.citas.modelo.Medico;
+
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 @Stateless
@@ -74,5 +83,44 @@ public class HorarioBusiness {
         return horarioDAO.listarTodos().stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
+    }
+    
+    public void crearRecurrencia(RecurrenciaHorarioDTO dto) {
+        Medico m = medicoDAO.buscarPorId(dto.getMedicoId());
+        LocalDate hoy = LocalDate.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+
+        for (String diaEs : dto.getDiasSemana()) {
+            DayOfWeek dow = parseDia(diaEs);
+            // obtenemos la próxima fecha (o hoy si coincide)
+            LocalDate fecha = hoy.with(TemporalAdjusters.nextOrSame(dow));
+
+            for (String horaTxt : dto.getHoras()) {
+                LocalTime inicio = LocalTime.parse(horaTxt, fmt);
+                Horario h = new Horario();
+                h.setMedico(m);
+                h.setFecha(fecha);
+                h.setHoraInicio(inicio);
+                // cada slot dura 30 minutos (ajusta si quieres otra duración)
+                h.setHoraFin(inicio.plusMinutes(30));
+                horarioDAO.crear(h);
+            }
+        }
+    }
+    
+    private DayOfWeek parseDia(String diaEs) {
+        switch (diaEs.toLowerCase()) {
+            case "lunes":      return DayOfWeek.MONDAY;
+            case "martes":     return DayOfWeek.TUESDAY;
+            case "miercoles":
+            case "miércoles":  return DayOfWeek.WEDNESDAY;
+            case "jueves":     return DayOfWeek.THURSDAY;
+            case "viernes":    return DayOfWeek.FRIDAY;
+            case "sabado":
+            case "sábado":     return DayOfWeek.SATURDAY;
+            case "domingo":    return DayOfWeek.SUNDAY;
+            default:
+                throw new IllegalArgumentException("Día inválido: " + diaEs);
+        }
     }
 }

@@ -21,11 +21,9 @@ public class UsuarioResource {
     public Response crear(UsuarioDTO dto, @Context UriInfo uriInfo) {
         UsuarioDTO creado = usrBus.crear(dto);
         URI uri = uriInfo.getAbsolutePathBuilder()
-                         .path(creado.getId().toString())
+                         .path(String.valueOf(creado.getId()))
                          .build();
-        return Response.created(uri)
-                       .entity(creado)
-                       .build();
+        return Response.created(uri).entity(creado).build();
     }
 
     @GET
@@ -36,9 +34,20 @@ public class UsuarioResource {
         return Response.ok(lista).build();
     }
 
-    @GET @Path("{id}")
+    @GET
+    @Path("{id}")
     public Response ver(@PathParam("id") Long id) {
         UsuarioDTO dto = usrBus.buscarPorId(id);
+        if (dto == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(dto).build();
+    }
+
+    @GET
+    @Path("firebase/{uid}")
+    public Response verPorFirebaseUid(@PathParam("uid") String uid) {
+        UsuarioDTO dto = usrBus.buscarPorFirebaseUid(uid);
         if (dto == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -50,7 +59,7 @@ public class UsuarioResource {
         dto.setId(id);
         UsuarioDTO actualizado = usrBus.actualizar(dto);
         if (actualizado == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+          return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok(actualizado).build();
     }

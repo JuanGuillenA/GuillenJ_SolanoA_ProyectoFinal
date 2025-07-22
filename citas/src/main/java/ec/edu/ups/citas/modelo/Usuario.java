@@ -1,87 +1,44 @@
 package ec.edu.ups.citas.modelo;
 
 import jakarta.persistence.*;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "usuarios")
-public class Usuario implements Serializable {
-
-	private static final long serialVersionUID = 1L;
-
+@Table(name="usuarios")
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;                  // ← PK interno
 
-    @Column(nullable = false, length = 100)
-    private String nombre;
+    @Column(name = "firebase_uid", unique = true, nullable = false)
+    private String firebaseUid;        // ← UID de Firebase
 
-    @Column(nullable = false, length = 100)
-    private String apellido;
+    @Column(name = "display_name")
+    private String displayName;
 
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
+    private String telefono;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Rol rol;
+    private Rol role;
 
-    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Cita> citas = new ArrayList<>();
-    
- // Método auxiliar para añadir una cita
-    public void addCita(Cita cita) {
-        citas.add(cita);
-        cita.setPaciente(this);
-    }
-
-    // Método auxiliar para quitar una cita
-    public void removeCita(Cita cita) {
-        citas.remove(cita);
-        cita.setPaciente(null);
-    }
-
-    // Constructores
-    public Usuario() { }
-
-    public Usuario(String nombre, String apellido, String email, String password, Rol rol) {
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.password = password;
-        this.rol = rol;
-    }
-
+    // getters y setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getFirebaseUid() { return firebaseUid; }
+    public void setFirebaseUid(String firebaseUid) { this.firebaseUid = firebaseUid; }
 
-    public String getApellido() { return apellido; }
-    public void setApellido(String apellido) { this.apellido = apellido; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
 
-    public Rol getRol() { return rol; }
-    public void setRol(Rol rol) { this.rol = rol; }
-
-	public List<Cita> getCitas() {
-		return citas;
-	}
-
-	public void setCitas(List<Cita> citas) {
-		this.citas = citas;
-	}
-    
-    
+    public Rol getRole() { return role; }
+    public void setRole(Rol role) { this.role = role; }
 }

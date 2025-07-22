@@ -2,6 +2,7 @@ package ec.edu.ups.citas.service;
 
 import ec.edu.ups.citas.business.HorarioBusiness;
 import ec.edu.ups.citas.dto.HorarioDTO;
+import ec.edu.ups.citas.dto.RecurrenciaHorarioDTO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
@@ -70,5 +71,13 @@ public class HorarioResource {
         return (borrado)
             ? Response.noContent().build()
             : Response.status(Response.Status.NOT_FOUND).build();
+    }
+    
+    @POST
+    @Path("/recurrencias")
+    public Response crearRecurrencia(RecurrenciaHorarioDTO dto) {
+        horBus.crearRecurrencia(dto);
+        // no devuelvo entidad; el front luego hace GET /horarios?medicoId=…
+        return Response.noContent().build();
     }
 }

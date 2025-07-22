@@ -14,25 +14,30 @@ public class UsuarioDAO {
     @PersistenceContext(unitName = "citasPersistenceUnit")
     private EntityManager em;
 
-    public void crear(Usuario usuario) {
-        em.persist(usuario);
+    public void crear(Usuario u) {
+        em.persist(u);
     }
 
-    public Usuario actualizar(Usuario usuario) {
-        return em.merge(usuario);
+    public Usuario actualizar(Usuario u) {
+        return em.merge(u);
     }
 
     public boolean eliminar(Long id) {
         Usuario u = em.find(Usuario.class, id);
-        if (u != null) {
-            em.remove(u);
-            return true;
-        }
-		return false;
+        if (u != null) { em.remove(u); return true; }
+        return false;
     }
 
     public Usuario buscarPorId(Long id) {
         return em.find(Usuario.class, id);
+    }
+
+    public Usuario buscarPorFirebaseUid(String uid) {
+        TypedQuery<Usuario> q = em.createQuery(
+            "SELECT u FROM Usuario u WHERE u.firebaseUid = :uid", Usuario.class);
+        q.setParameter("uid", uid);
+        List<Usuario> xs = q.getResultList();
+        return xs.isEmpty() ? null : xs.get(0);
     }
 
     public List<Usuario> listarTodos() {
@@ -58,8 +63,8 @@ public class UsuarioDAO {
     public List<Usuario> buscarPorNombreOEmail(String texto) {
         String pattern = "%" + texto.toLowerCase() + "%";
         TypedQuery<Usuario> q = em.createQuery(
-            "SELECT u FROM Usuario u WHERE LOWER(u.nombre) LIKE :pat OR LOWER(u.email) LIKE :pat",
-            Usuario.class);
+            "SELECT u FROM Usuario u " +
+            "WHERE LOWER(u.nombre) LIKE :pat OR LOWER(u.email) LIKE :pat", Usuario.class);
         q.setParameter("pat", pattern);
         return q.getResultList();
     }

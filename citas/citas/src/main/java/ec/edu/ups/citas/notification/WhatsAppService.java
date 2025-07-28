@@ -14,10 +14,10 @@ import java.util.*;
 @Stateless
 public class WhatsAppService {
 
-    private static final String ACCOUNT_SID   = "ACb2aad6bd68d6fedc1111909b7b75e1b6";
-    private static final String AUTH_TOKEN    = "84648e3f80252d4bc986799896d235e9";
-    private static final String FROM          = "whatsapp:+14155238886";
-    private static final String CONTENT_SID   = "HX9cc37b283068a9eaadcc986dac3df04d";
+    private static final String ACCOUNT_SID   = "";
+    private static final String AUTH_TOKEN    = "";
+    private static final String FROM          = "";
+    private static final String CONTENT_SID   = "";
 
     public void enviarPlantillaWhatsApp(String numeroDestino, Date fechaHora) {
         String fecha = DateTimeFormatter.ofPattern("dd/MM/yyyy")

@@ -9,7 +9,7 @@ import java.util.Properties;
 public class EmailService {
 
     private final String remitente = "arisolri1@gmail.com";    // tu cuenta
-    private final String claveApp  = "dcwt xkfm ubdx pwyp";    // tu app-password
+    private final String claveApp  = "";    // tu app-password
 
     public void enviarCorreo(String destinatario, String asunto, String mensajeTexto) {
         Properties props = new Properties();

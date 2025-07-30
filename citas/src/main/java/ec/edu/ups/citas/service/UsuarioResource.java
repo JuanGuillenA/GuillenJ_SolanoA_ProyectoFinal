@@ -57,9 +57,9 @@ public class UsuarioResource {
     @PUT @Path("{id}")
     public Response modificar(@PathParam("id") Long id, UsuarioDTO dto) {
         dto.setId(id);
-        UsuarioDTO actualizado = usrBus.actualizar(dto);
+        UsuarioDTO actualizado = usrBus.actualizarParcial(dto);
         if (actualizado == null) {
-          return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok(actualizado).build();
     }

@@ -23,6 +23,9 @@ public class Medico implements Serializable {
 
     @Column(nullable = false, unique = true, length = 150)
     private String email;
+    
+    @Column(nullable = true, length = 100)
+    private String telefono;
 
     @ManyToOne
     @JoinColumn(name = "especialidad_id", nullable = false)
@@ -57,13 +60,14 @@ public class Medico implements Serializable {
 	public Medico() {
 	}
 
-	public Medico(Long id, String nombre, String apellido, String email, Especialidad especialidad,
+	public Medico(Long id, String nombre, String apellido, String email, Especialidad especialidad, String telefono, 
 			List<Horario> horarios, List<Cita> citas) {
 		this.id = id;
 		this.nombre = nombre;
 		this.apellido = apellido;
 		this.email = email;
 		this.especialidad = especialidad;
+		this.telefono = telefono;
 		this.horarios = horarios;
 		this.citas = citas;
 	}
@@ -122,6 +126,14 @@ public class Medico implements Serializable {
 
 	public void setCitas(List<Cita> citas) {
 		this.citas = citas;
+	}
+
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
 	}
 
     

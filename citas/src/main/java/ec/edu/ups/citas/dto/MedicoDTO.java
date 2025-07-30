@@ -10,6 +10,8 @@ public class MedicoDTO implements Serializable {
     private String apellido;
     private String email;
     private Long especialidadId;
+    private String telefono;        // ← lo añades aquí
+
 
     public MedicoDTO() {}
 
@@ -23,4 +25,6 @@ public class MedicoDTO implements Serializable {
     public void setEmail(String email) { this.email = email; }
     public Long getEspecialidadId() { return especialidadId; }
     public void setEspecialidadId(Long especialidadId) { this.especialidadId = especialidadId; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
 }

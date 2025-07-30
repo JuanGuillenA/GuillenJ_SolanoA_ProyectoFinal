@@ -6,8 +6,6 @@ import ec.edu.ups.citas.dto.RecurrenciaHorarioDTO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
-import java.net.URI;
-import java.time.LocalDate;
 import java.util.List;
 
 @Path("/horarios")
@@ -15,69 +13,55 @@ import java.util.List;
 @Consumes(MediaType.APPLICATION_JSON)
 public class HorarioResource {
 
-    @Inject
-    private HorarioBusiness horBus;
+    @Inject private HorarioBusiness horBus;
 
-    @POST
-    public Response crear(HorarioDTO dto, @Context UriInfo uriInfo) {
-        HorarioDTO creado = horBus.crear(dto);
-        URI uri = uriInfo.getAbsolutePathBuilder()
-                         .path(creado.getId().toString())
-                         .build();
-        return Response.created(uri)
-                       .entity(creado)
-                       .build();
+    /** Crea todos los slots según recurrencia. */
+    @POST @Path("/recurrencias")
+    public Response crearRecurrencia(RecurrenciaHorarioDTO dto) {
+        horBus.crearRecurrencia(dto);
+        return Response.noContent().build();
     }
 
+    /** Lista todos los slots de un médico (medicoId obligatorio). */
     @GET
-    public Response listar(
-        @QueryParam("medicoId") Long medicoId,
-        @QueryParam("fecha")    String fechaIso
-    ) {
-        List<HorarioDTO> lista;
-        if (medicoId != null && fechaIso != null) {
-            LocalDate f = LocalDate.parse(fechaIso);
-            lista = horBus.listarPorMedicoYFecha(medicoId, f);
-        } else if (medicoId != null) {
-            lista = horBus.listarPorMedico(medicoId);
-        } else {
-            lista = horBus.listarTodos();
+    public Response listar(@QueryParam("medicoId") Long medicoId) {
+        if (medicoId == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("Falta parámetro medicoId")
+                           .build();
         }
+        List<HorarioDTO> lista = horBus.listarPorMedico(medicoId);
         return Response.ok(lista).build();
     }
 
+    
     @GET @Path("{id}")
     public Response ver(@PathParam("id") Long id) {
         HorarioDTO dto = horBus.buscarPorId(id);
-        if (dto == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(dto).build();
+        return dto == null
+             ? Response.status(Response.Status.NOT_FOUND).build()
+             : Response.ok(dto).build();
     }
 
+   
     @PUT @Path("{id}")
-    public Response modificar(@PathParam("id") Long id, HorarioDTO dto) {
+    public Response modificarParcial(
+            @PathParam("id") Long id,
+            HorarioDTO dto
+    ) {
         dto.setId(id);
-        HorarioDTO actualizado = horBus.actualizar(dto);
-        if (actualizado == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(actualizado).build();
+        HorarioDTO mod = horBus.actualizarParcial(dto);
+        return mod == null
+             ? Response.status(Response.Status.NOT_FOUND).build()
+             : Response.ok(mod).build();
     }
 
+    /** Elimina un slot por su ID. */
     @DELETE @Path("{id}")
     public Response eliminar(@PathParam("id") Long id) {
-        boolean borrado = horBus.eliminar(id);
-        return (borrado)
-            ? Response.noContent().build()
-            : Response.status(Response.Status.NOT_FOUND).build();
-    }
-    
-    @POST
-    @Path("/recurrencias")
-    public Response crearRecurrencia(RecurrenciaHorarioDTO dto) {
-        horBus.crearRecurrencia(dto);
-        // no devuelvo entidad; el front luego hace GET /horarios?medicoId=…
-        return Response.noContent().build();
+        boolean ok = horBus.eliminar(id);
+        return ok
+             ? Response.noContent().build()
+             : Response.status(Response.Status.NOT_FOUND).build();
     }
 }

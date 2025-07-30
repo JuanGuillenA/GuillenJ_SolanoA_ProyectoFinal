@@ -55,7 +55,7 @@ public class MedicoResource {
     @PUT @Path("{id}")
     public Response modificar(@PathParam("id") Long id, MedicoDTO dto) {
         dto.setId(id);
-        MedicoDTO actualizado = medBus.actualizar(dto);
+        MedicoDTO actualizado = medBus.actualizarParcial(dto);
         if (actualizado == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

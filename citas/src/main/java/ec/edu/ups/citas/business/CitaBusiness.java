@@ -7,6 +7,9 @@ import ec.edu.ups.citas.dao.UsuarioDAO;
 import ec.edu.ups.citas.dto.CitaDTO;
 import ec.edu.ups.citas.modelo.Cita;
 import ec.edu.ups.citas.modelo.Estado;
+import ec.edu.ups.citas.modelo.Horario;
+import ec.edu.ups.citas.modelo.Medico;
+import ec.edu.ups.citas.modelo.Usuario;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import java.time.LocalDate;
@@ -22,7 +25,23 @@ public class CitaBusiness {
     @Inject private UsuarioDAO usuarioDAO;
 
     public CitaDTO crear(CitaDTO dto) {
-        Cita c = toEntity(dto);
+        Usuario u = usuarioDAO.buscarPorFirebaseUid(dto.getPacienteId());
+        if (u == null) throw new IllegalArgumentException("Usuario no encontrado");
+
+        Horario h = horarioDAO.buscarPorId(dto.getHorarioId());
+        Medico  m = medicoDAO.buscarPorId(dto.getMedicoId());
+        if (h == null || m == null) throw new IllegalArgumentException("Horario o Médico no encontrados");
+
+        Cita c = new Cita();
+        c.setPaciente(u);
+        c.setHorario(h);
+        c.setMedico(m);
+        c.setEstado(Estado.PENDIENTE);
+
+        // **¡MUY IMPORTANTE!** asignar fecha y hora desde el slot:
+        c.setFecha( h.getFecha() );
+        c.setHora(  h.getHoraInicio() );
+
         citaDAO.crear(c);
         return toDTO(c);
     }
@@ -110,17 +129,25 @@ public class CitaBusiness {
                       .map(this::toDTO)
                       .collect(Collectors.toList());
     }
+    
+    public List<CitaDTO> listarPorFechas(LocalDate desde, LocalDate hasta) {
+        return citaDAO.listarPorFechas(desde, hasta)
+                      .stream()
+                      .map(this::toDTO)
+                      .collect(Collectors.toList());
+    }
 
     private CitaDTO toDTO(Cita c) {
         if (c == null) return null;
         CitaDTO dto = new CitaDTO();
-        dto.setId(         c.getId() );
-        dto.setEstado(     c.getEstado().name() );
-        dto.setFecha(      c.getFecha() );
-        dto.setHora(       c.getHora() );
-        dto.setHorarioId(  c.getHorario().getId() );
-        dto.setMedicoId(   c.getMedico().getId() );    // Long
-        dto.setPacienteId( c.getPaciente().getId().toString() );  // String UID de Firebase
+        dto.setId(c.getId());
+        dto.setEstado(c.getEstado().name());
+        dto.setFecha(c.getFecha());
+        dto.setHora(c.getHora());
+        dto.setHorarioId(c.getHorario().getId());
+        dto.setMedicoId(c.getMedico().getId());
+        // devolvemos de vuelta el UID de Firebase
+        dto.setPacienteId(c.getPaciente().getFirebaseUid());
         return dto;
     }
 
@@ -128,12 +155,26 @@ public class CitaBusiness {
         Cita c = (dto.getId() != null)
             ? citaDAO.buscarPorId(dto.getId())
             : new Cita();
-        c.setFecha(dto.getFecha());
-        c.setHora(dto.getHora());
-        c.setEstado(Estado.valueOf(dto.getEstado()));
-        c.setHorario(horarioDAO.buscarPorId(dto.getHorarioId()));
-        c.setMedico(medicoDAO.buscarPorId(dto.getMedicoId()));
-        c.setPaciente(usuarioDAO.buscarPorFirebaseUid(dto.getPacienteId()));
+
+        if (dto.getPacienteId() != null) {
+            Usuario u = usuarioDAO.buscarPorFirebaseUid(dto.getPacienteId());
+            c.setPaciente(u);
+        }
+        if (dto.getHorarioId() != null) {
+            c.setHorario(horarioDAO.buscarPorId(dto.getHorarioId()));
+        }
+        if (dto.getMedicoId() != null) {
+            c.setMedico(medicoDAO.buscarPorId(dto.getMedicoId()));
+        }
+        if (dto.getEstado() != null) {
+            c.setEstado(Estado.valueOf(dto.getEstado()));
+        }
+        if (dto.getFecha() != null) {
+            c.setFecha(dto.getFecha());
+        }
+        if (dto.getHora() != null) {
+            c.setHora(dto.getHora());
+        }
         return c;
     }
 }

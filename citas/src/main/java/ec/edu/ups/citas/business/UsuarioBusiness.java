@@ -68,8 +68,36 @@ public class UsuarioBusiness {
         return u;
     }
 
+    public UsuarioDTO actualizarParcial(UsuarioDTO dto) {
+        // 1. Traigo la entidad existente
+        Usuario u = dao.buscarPorId(dto.getId());
+        if (u == null) {
+            return null;
+        }
+
+        // 2. Solo seteo los campos que vienen no nulos en el DTO
+        if (dto.getDisplayName() != null) {
+            u.setDisplayName(dto.getDisplayName());
+        }
+        if (dto.getEmail() != null) {
+            u.setEmail(dto.getEmail());
+        }
+        if (dto.getTelefono() != null) {
+            u.setTelefono(dto.getTelefono());
+        }
+        if (dto.getRole() != null) {
+            // dto.getRole() es String, conviértelo a Rol enum
+            u.setRole(Rol.valueOf(dto.getRole()));
+        }
+
+        // 3. Guardo cambios
+        u = dao.actualizar(u);
+
+        // 4. Devuelvo DTO
+        return toDTO(u);
+    }
+
     private UsuarioDTO toDTO(Usuario u) {
-        if (u == null) return null;
         UsuarioDTO dto = new UsuarioDTO();
         dto.setId(u.getId());
         dto.setFirebaseUid(u.getFirebaseUid());

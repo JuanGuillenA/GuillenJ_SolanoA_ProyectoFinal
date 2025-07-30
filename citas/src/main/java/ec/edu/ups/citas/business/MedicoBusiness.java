@@ -16,14 +16,17 @@ public class MedicoBusiness {
     @Inject private MedicoDAO      medicoDAO;
     @Inject private EspecialidadDAO especialidadDAO;
 
+ // 1) Create normal
     public MedicoDTO crear(MedicoDTO dto) {
-        Medico m = toEntity(dto);
+        Medico m = toEntityCrear(dto);
         medicoDAO.crear(m);
         return toDTO(m);
     }
 
+    // 2) Update full (opcional)
     public MedicoDTO actualizar(MedicoDTO dto) {
-        Medico m = toEntity(dto);
+        Medico m = toEntityCrear(dto);
+        m.setId(dto.getId());         // en tu DAO quizá no necesites esto
         m = medicoDAO.actualizar(m);
         return toDTO(m);
     }
@@ -55,6 +58,50 @@ public class MedicoBusiness {
                  .collect(Collectors.toList());
     }
 
+ // 3) Partial update
+    public MedicoDTO actualizarParcial(MedicoDTO dto) {
+        Medico m = medicoDAO.buscarPorId(dto.getId());
+        if (m == null) {
+            return null;
+        }
+        if (dto.getNombre() != null) {
+            m.setNombre(dto.getNombre());
+        }
+        if (dto.getApellido() != null) {
+            m.setApellido(dto.getApellido());
+        }
+        if (dto.getEmail() != null) {
+            m.setEmail(dto.getEmail());
+        }
+        // Cerrar el if anterior aquí:
+        if (dto.getEspecialidadId() != null) {
+            m.setEspecialidad(
+                especialidadDAO.buscarPorId(dto.getEspecialidadId())
+            );
+        }
+        // Ahora el teléfono se comprueba siempre, independientemente de especialidad:
+        if (dto.getTelefono() != null) {
+            m.setTelefono(dto.getTelefono());
+        }
+
+        m = medicoDAO.actualizar(m);
+        return toDTO(m);
+    }
+
+    // Helper: convierte un DTO a una entidad NUEVA (para crear)
+    private Medico toEntityCrear(MedicoDTO dto) {
+        Medico m = new Medico();
+        m.setNombre(dto.getNombre());
+        m.setApellido(dto.getApellido());
+        m.setEmail(dto.getEmail());
+        m.setTelefono(dto.getTelefono());
+        m.setEspecialidad(
+            especialidadDAO.buscarPorId(dto.getEspecialidadId())
+        );
+        return m;
+    }
+
+    // Helper: convierte entidad a DTO
     private MedicoDTO toDTO(Medico m) {
         MedicoDTO dto = new MedicoDTO();
         dto.setId(m.getId());
@@ -62,17 +109,9 @@ public class MedicoBusiness {
         dto.setApellido(m.getApellido());
         dto.setEmail(m.getEmail());
         dto.setEspecialidadId(m.getEspecialidad().getId());
+        dto.setTelefono(m.getTelefono());
         return dto;
     }
 
-    private Medico toEntity(MedicoDTO dto) {
-        Medico m = dto.getId() != null
-                ? medicoDAO.buscarPorId(dto.getId())
-                : new Medico();
-        m.setNombre(dto.getNombre());
-        m.setApellido(dto.getApellido());
-        m.setEmail(dto.getEmail());
-        m.setEspecialidad(especialidadDAO.buscarPorId(dto.getEspecialidadId()));
-        return m;
-    }
+    // resto de métodos (listar, buscar, eliminar) siguen igual…
 }

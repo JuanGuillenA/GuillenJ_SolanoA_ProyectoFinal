@@ -14,50 +14,81 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
+import java.time.format.TextStyle;
 import java.util.List;
-
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Stateless
 public class HorarioBusiness {
 
     @Inject private HorarioDAO horarioDAO;
-    @Inject private MedicoDAO  medicoDAO;
+    @Inject private MedicoDAO   medicoDAO;
 
-    public HorarioDTO crear(HorarioDTO dto) {
-        Horario h = toEntity(dto);
-        horarioDAO.crear(h);
-        return toDTO(h);
+    /**
+     * Bulk-create franjas de 30' recorriendo desde fechaInicio hasta fechaFin,
+     * solo los días de semana indicados y entre horaInicio–horaFin.
+     */
+    public void crearRecurrencia(RecurrenciaHorarioDTO dto) {
+        Medico medico = medicoDAO.buscarPorId(dto.getMedicoId());
+        LocalDate fecha = dto.getFechaInicio();
+
+        while (!fecha.isAfter(dto.getFechaFin())) {
+            DayOfWeek dow = fecha.getDayOfWeek();
+            String nombreDia = dow.getDisplayName(TextStyle.FULL, new Locale("es"));
+            // si este día está en la lista
+            if (dto.getDiasSemana().stream()
+                   .anyMatch(d -> d.equalsIgnoreCase(nombreDia))) {
+
+                // crear slots de 30' entre horaInicio y horaFin
+                LocalTime t = dto.getHoraInicio();
+                while (t.isBefore(dto.getHoraFin())) {
+                    Horario h = new Horario();
+                    h.setMedico(medico);
+                    h.setFecha(fecha);
+                    h.setHoraInicio(t);
+                    h.setHoraFin(t.plusMinutes(30));
+                    horarioDAO.crear(h);
+                    t = t.plusMinutes(30);
+                }
+            }
+            fecha = fecha.plusDays(1);
+        }
     }
 
-    public HorarioDTO actualizar(HorarioDTO dto) {
-        Horario h = toEntity(dto);
-        h = horarioDAO.actualizar(h);
-        return toDTO(h);
+    /** Devuelve todos los slots de 30' para un médico. */
+    public List<HorarioDTO> listarPorMedico(Long medId) {
+        return horarioDAO.listarPorMedico(medId)
+                         .stream()
+                         .map(this::toDTO)
+                         .collect(Collectors.toList());
     }
 
-    public boolean eliminar(Long id) {
-        return horarioDAO.eliminar(id);
-    }
-
+    /** Busca un slot por su ID. */
     public HorarioDTO buscarPorId(Long id) {
         Horario h = horarioDAO.buscarPorId(id);
         return h == null ? null : toDTO(h);
     }
 
-    public List<HorarioDTO> listarPorMedico(Long medId) {
-        return horarioDAO.listarPorMedico(medId).stream()
-                 .map(this::toDTO)
-                 .collect(Collectors.toList());
+    /** Actualización parcial: sólo los campos no-null en el DTO. */
+    public HorarioDTO actualizarParcial(HorarioDTO dto) {
+        Horario h = horarioDAO.buscarPorId(dto.getId());
+        if (h == null) return null;
+
+        if (dto.getFecha()      != null) h.setFecha(dto.getFecha());
+        if (dto.getHoraInicio() != null) h.setHoraInicio(dto.getHoraInicio());
+        if (dto.getHoraFin()    != null) h.setHoraFin(dto.getHoraFin());
+
+        h = horarioDAO.actualizar(h);
+        return toDTO(h);
     }
 
-    public List<HorarioDTO> listarPorMedicoYFecha(Long medId, LocalDate fecha) {
-        return horarioDAO.listarPorMedicoYFecha(medId, fecha).stream()
-                 .map(this::toDTO)
-                 .collect(Collectors.toList());
+    /** Elimina un slot por su ID. */
+    public boolean eliminar(Long id) {
+        return horarioDAO.eliminar(id);
     }
+
+    // --- conversores entidad ↔ DTO ---
 
     private HorarioDTO toDTO(Horario h) {
         HorarioDTO dto = new HorarioDTO();
@@ -67,60 +98,5 @@ public class HorarioBusiness {
         dto.setHoraFin(h.getHoraFin());
         dto.setMedicoId(h.getMedico().getId());
         return dto;
-    }
-
-    private Horario toEntity(HorarioDTO dto) {
-        Horario h = dto.getId() != null
-                ? horarioDAO.buscarPorId(dto.getId())
-                : new Horario();
-        h.setFecha(dto.getFecha());
-        h.setHoraInicio(dto.getHoraInicio());
-        h.setHoraFin(dto.getHoraFin());
-        h.setMedico(medicoDAO.buscarPorId(dto.getMedicoId()));
-        return h;
-    }
-    public List<HorarioDTO> listarTodos() {
-        return horarioDAO.listarTodos().stream()
-            .map(this::toDTO)
-            .collect(Collectors.toList());
-    }
-    
-    public void crearRecurrencia(RecurrenciaHorarioDTO dto) {
-        Medico m = medicoDAO.buscarPorId(dto.getMedicoId());
-        LocalDate hoy = LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
-
-        for (String diaEs : dto.getDiasSemana()) {
-            DayOfWeek dow = parseDia(diaEs);
-            // obtenemos la próxima fecha (o hoy si coincide)
-            LocalDate fecha = hoy.with(TemporalAdjusters.nextOrSame(dow));
-
-            for (String horaTxt : dto.getHoras()) {
-                LocalTime inicio = LocalTime.parse(horaTxt, fmt);
-                Horario h = new Horario();
-                h.setMedico(m);
-                h.setFecha(fecha);
-                h.setHoraInicio(inicio);
-                // cada slot dura 30 minutos (ajusta si quieres otra duración)
-                h.setHoraFin(inicio.plusMinutes(30));
-                horarioDAO.crear(h);
-            }
-        }
-    }
-    
-    private DayOfWeek parseDia(String diaEs) {
-        switch (diaEs.toLowerCase()) {
-            case "lunes":      return DayOfWeek.MONDAY;
-            case "martes":     return DayOfWeek.TUESDAY;
-            case "miercoles":
-            case "miércoles":  return DayOfWeek.WEDNESDAY;
-            case "jueves":     return DayOfWeek.THURSDAY;
-            case "viernes":    return DayOfWeek.FRIDAY;
-            case "sabado":
-            case "sábado":     return DayOfWeek.SATURDAY;
-            case "domingo":    return DayOfWeek.SUNDAY;
-            default:
-                throw new IllegalArgumentException("Día inválido: " + diaEs);
-        }
     }
 }

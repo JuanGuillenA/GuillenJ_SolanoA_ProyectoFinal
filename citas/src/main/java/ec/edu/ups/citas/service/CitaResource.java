@@ -21,12 +21,12 @@ public class CitaResource {
     private CitaBusiness citaBus;
 
     @POST
-    public Response crear(CitaDTO dto, @Context UriInfo uriInfo) {
-        CitaDTO creado = citaBus.crear(dto);
-        URI uri = uriInfo.getAbsolutePathBuilder()
-                         .path(creado.getId().toString())
-                         .build();
-        return Response.created(uri).entity(creado).build();
+    public Response crear(CitaDTO dto, @Context UriInfo uri) {
+      CitaDTO creado = citaBus.crear(dto);
+      URI location = uri.getAbsolutePathBuilder()
+                        .path(creado.getId().toString())
+                        .build();
+      return Response.created(location).entity(creado).build();
     }
 
     @GET
@@ -68,6 +68,8 @@ public class CitaResource {
         } else if (especialidad != null) {
             lista = citaBus.listarPorEspecialidad(especialidad);
 
+        } else if (desde!=null && hasta!=null) {
+            lista = citaBus.listarPorFechas(desde, hasta);
         } else {
             lista = citaBus.listarTodos();
         }
@@ -105,5 +107,12 @@ public class CitaResource {
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+    }
+    
+    @GET
+    @RolesAllowed("PACIENTE")
+    public Response listarTodos() {
+        List<CitaDTO> lista = citaBus.listarTodos();
+        return Response.ok(lista).build();
     }
 }

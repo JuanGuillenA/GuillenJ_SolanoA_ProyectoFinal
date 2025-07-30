@@ -73,17 +73,23 @@ public class MedicoBusiness {
         if (dto.getEmail() != null) {
             m.setEmail(dto.getEmail());
         }
+<<<<<<< HEAD:citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         // Cerrar el if anterior aquí:
+=======
+>>>>>>> 5effaa4db1622a1a5f7c89015e5b432dfc262d92:citas/citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         if (dto.getEspecialidadId() != null) {
             m.setEspecialidad(
                 especialidadDAO.buscarPorId(dto.getEspecialidadId())
             );
         }
+<<<<<<< HEAD:citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         // Ahora el teléfono se comprueba siempre, independientemente de especialidad:
         if (dto.getTelefono() != null) {
             m.setTelefono(dto.getTelefono());
         }
 
+=======
+>>>>>>> 5effaa4db1622a1a5f7c89015e5b432dfc262d92:citas/citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         m = medicoDAO.actualizar(m);
         return toDTO(m);
     }
@@ -94,7 +100,10 @@ public class MedicoBusiness {
         m.setNombre(dto.getNombre());
         m.setApellido(dto.getApellido());
         m.setEmail(dto.getEmail());
+<<<<<<< HEAD:citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         m.setTelefono(dto.getTelefono());
+=======
+>>>>>>> 5effaa4db1622a1a5f7c89015e5b432dfc262d92:citas/citas/src/main/java/ec/edu/ups/citas/business/MedicoBusiness.java
         m.setEspecialidad(
             especialidadDAO.buscarPorId(dto.getEspecialidadId())
         );
